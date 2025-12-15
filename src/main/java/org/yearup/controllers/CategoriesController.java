@@ -35,6 +35,7 @@ public class CategoriesController
     {
         return categoryDao.getAllCategories();
 
+
     }
 
     @RequestMapping(path="/categories/{id}", method = RequestMethod.GET)
