@@ -1,6 +1,7 @@
 package org.yearup.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.yearup.data.CategoryDao;
@@ -33,25 +34,26 @@ public class CategoriesController
         this.productDao = productDao;
     }
 
-    @RequestMapping()
-    public List<Category> getAll()
+    @GetMapping()
+    public ResponseEntity<List<Category>> getAll()
     {
-        return categoryDao.getAllCategories();
+        return ResponseEntity.ok(categoryDao.getAllCategories());
     }
 
-    @RequestMapping(path="/{id}")
-    public Category getById(@PathVariable int id)
+    @GetMapping(path="/{id}")
+    public ResponseEntity<Category> getById(@PathVariable int id)
     {
-        return categoryDao.getById(id);
+        return ResponseEntity.ok(categoryDao.getById(id));
     }
 
     // the url to return all products in category 1 would look like this
     // https://localhost:8080/categories/1/products
     @GetMapping(path="/{categoryId}/products")
-    public List<Product> getProductsById(@PathVariable int categoryId)
+    public ResponseEntity<List<Product>> getProductsById(@PathVariable int categoryId)
     {
-        // get a list of product by categoryId
-        return productDao.listByCategoryId(categoryId);
+        List<Product> products = productDao.listByCategoryId(categoryId);
+
+        return ResponseEntity.ok(products);
     }
 
     // add annotation to call this method for a POST action
@@ -59,9 +61,9 @@ public class CategoriesController
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public Category addCategory(@RequestBody Category category)
+    public ResponseEntity<Category> addCategory(@RequestBody Category category)
     {
-        return categoryDao.create(category);
+        return ResponseEntity.ok(categoryDao.create(category));
     }
 
     // add annotation to call this method for a PUT (update) action - the url path must include the categoryId
@@ -69,9 +71,11 @@ public class CategoriesController
 
     @PutMapping(path="/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public void updateCategory(@PathVariable int id, @RequestBody Category category)
+    public ResponseEntity<Void> updateCategory(@PathVariable int id, @RequestBody Category category)
     {
         categoryDao.update(id, category);
+        return ResponseEntity.ok().build();
+
     }
 
     // add annotation to call this method for a DELETE action - the url path must include the categoryId
@@ -79,8 +83,9 @@ public class CategoriesController
 
     @DeleteMapping(path="/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public void deleteCategory(@PathVariable int id)
+    public ResponseEntity<Void> deleteCategory(@PathVariable int id)
     {
         categoryDao.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -65,7 +65,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public Category create(Category category)
     {
-        String query = "INSERT INTO categories (name, description) VALUES (?, ?);";
+        String query = "INSERT INTO categories(name, description) VALUES (?, ?);";
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -73,21 +73,24 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             statement.setString(1, category.getName());
             statement.setString(2, category.getDescription());
 
-            statement.executeUpdate();
+            int rowsAffected = statement.executeUpdate();
 
-            try (ResultSet keys = statement.getGeneratedKeys()) {
-                if (keys.next()) {
-                    int categoryId = keys.getInt(1);
-                    return getById(categoryId);
+            if (rowsAffected > 0) {
+                // Retrieve the generated keys
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+
+                if (generatedKeys.next()) {
+                    // Retrieve the auto-incremented ID
+                    int orderId = generatedKeys.getInt(1);
+
+                    // get the newly inserted category
+                    return getById(orderId);
                 }
             }
-
-            // May need to remove and add different approach to returning
-            throw new SQLException("Error creating category");
-
         } catch (SQLException e) {
             throw new RuntimeException("Error creating category", e);
         }
+        return null;
     }
 
     @Override
