@@ -22,7 +22,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     {
         List<Category> categories = new ArrayList<>();
 
-        String query = "SELECT category_id, name, description FROM categories";
+        String query = "SELECT category_id, name, description FROM categories;";
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query);
@@ -43,7 +43,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public Category getById(int categoryId)
     {
-        String query = "SELECT category_id, name, description FROM categories WHERE category_id = ?";
+        String query = "SELECT category_id, name, description FROM categories WHERE category_id = ?;";
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -65,14 +65,13 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public Category create(Category category)
     {
-        String query = "INSERT INTO categories (category_id, name, description) VALUES (?, ?, ?)";
+        String query = "INSERT INTO categories (name, description) VALUES (?, ?);";
 
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
-            statement.setInt(1, category.getCategoryId());
-            statement.setString(2, category.getName());
-            statement.setString(3, category.getDescription());
+            statement.setString(1, category.getName());
+            statement.setString(2, category.getDescription());
 
             statement.executeUpdate();
 
@@ -83,17 +82,18 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                 }
             }
 
+            // May need to remove and add different approach to returning
+            throw new SQLException("Error creating category");
+
         } catch (SQLException e) {
             throw new RuntimeException("Error creating category", e);
         }
-
-        return null;
     }
 
     @Override
     public void update(int categoryId, Category category)
     {
-        String query = "UPDATE categories SET name = ?, description = ? WHERE category_id = ?";
+        String query = "UPDATE categories SET name = ?, description = ? WHERE category_id = ?;";
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -102,7 +102,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             statement.setString(2, category.getDescription());
             statement.setInt(3, category.getCategoryId());
 
-            int rowsAffected = statement.executeUpdate();
+            statement.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException("Error updating category", e);
@@ -112,14 +112,14 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public void delete(int categoryId)
     {
-        String query = "DELETE FROM categories WHERE category_id = ?";
+        String query = "DELETE FROM categories WHERE category_id = ?;";
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setInt(1, categoryId);
 
-            int rowsAffected = statement.executeUpdate();
+            statement.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting category", e);
@@ -132,14 +132,12 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         String name = row.getString("name");
         String description = row.getString("description");
 
-        Category category = new Category()
+        return new Category()
         {{
             setCategoryId(categoryId);
             setName(name);
             setDescription(description);
         }};
-
-        return category;
     }
 
 }
