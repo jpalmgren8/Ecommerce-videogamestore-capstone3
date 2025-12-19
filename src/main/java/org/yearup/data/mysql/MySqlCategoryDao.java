@@ -53,13 +53,13 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             try (ResultSet results = statement.executeQuery()) {
                 if (results.next()) {
                     return mapRow(results);
+                } else {
+                    return null;
                 }
             }
-
         } catch (SQLException e) {
             throw new RuntimeException("Error getting category by ID", e);
         }
-        return null;
     }
 
     @Override
@@ -103,7 +103,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
 
             statement.setString(1, category.getName());
             statement.setString(2, category.getDescription());
-            statement.setInt(3, category.getCategoryId());
+            statement.setInt(3, categoryId);
 
             statement.executeUpdate();
 
@@ -135,12 +135,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         String name = row.getString("name");
         String description = row.getString("description");
 
-        return new Category()
-        {{
-            setCategoryId(categoryId);
-            setName(name);
-            setDescription(description);
-        }};
+        return new Category(categoryId, name, description);
     }
 
 }
